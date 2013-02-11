@@ -1,4 +1,4 @@
-ECE-150-251-Project
+WiDrive
 ===================
 
 Android Project for ECE 150/251
