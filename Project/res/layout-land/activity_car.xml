@@ -1,0 +1,50 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#000000"
+    tools:context=".RemoteActivity" >
+
+    <TextView
+        android:id="@+id/car_description"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true"
+        android:layout_below="@+id/car_title"
+        android:layout_marginTop="21dp"
+        android:text="@string/car_description"
+        android:textColor="#FFFFFF"
+        android:textSize="20sp" />
+
+    <TextView
+        android:id="@+id/car_title"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:layout_centerHorizontal="true"
+        android:text="@string/car_title"
+        android:textColor="#FFFFFF"
+        android:textSize="23sp" />
+
+    <Button
+        android:id="@+id/button_server_start"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignBaseline="@+id/button_server_pair"
+        android:layout_alignBottom="@+id/button_server_pair"
+        android:layout_alignParentRight="true"
+        android:layout_toRightOf="@+id/car_title"
+        android:background="@drawable/button_server_custom"
+        android:text="@string/button_start" />
+
+    <Button
+        android:id="@+id/button_server_pair"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentLeft="true"
+        android:layout_toLeftOf="@+id/car_title"
+        android:background="@drawable/button_client_custom"
+        android:text="@string/button_pair" />
+
+</RelativeLayout>
