@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="app_name">WiDrive</string>
+    <string name="hello_world">Hello world!</string>
+    <string name="menu_settings">Settings</string>
+	<string name="button_server_activity">Car</string>
+	<string name="button_client_activity">Remote</string>
+	<string name="title">Welcome to Wi-Drive.</string>
+	<string name="welcome_message">Please select which function you would like this phone to perform.</string>
+	
+</resources>
