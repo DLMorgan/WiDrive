@@ -8,6 +8,10 @@ import android.view.View;
 	
 public class WiDriveActivity extends Activity {
 	
+	public static final String TAG = "WiDrive";
+	
+	
+	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -32,5 +36,5 @@ public class WiDriveActivity extends Activity {
 	    Intent intent = new Intent(this, RemoteActivity.class);
 	    startActivity(intent);
 	}
-
+	
 }

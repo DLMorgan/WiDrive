@@ -52,6 +52,7 @@ public final class R {
         public static final int button_start=0x7f040007;
         public static final int car_description=0x7f040009;
         public static final int car_title=0x7f040008;
+        public static final int enable_wifi=0x7f04000c;
         public static final int menu_settings=0x7f040001;
         public static final int remote_description=0x7f04000b;
         public static final int remote_title=0x7f04000a;
