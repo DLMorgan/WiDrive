@@ -18,6 +18,7 @@ public final class R {
         public static final int button_server_default=0x7f020004;
         public static final int button_server_pressed=0x7f020005;
         public static final int ic_launcher=0x7f020006;
+        public static final int machine=0x7f020007;
     }
     public static final class id {
         public static final int button_client_activity=0x7f070008;
@@ -28,7 +29,10 @@ public final class R {
         public static final int button_server_start=0x7f070003;
         public static final int car_description=0x7f070001;
         public static final int car_title=0x7f070000;
-        public static final int menu_settings=0x7f07000c;
+        public static final int device_details=0x7f07000e;
+        public static final int device_name=0x7f07000d;
+        public static final int icon=0x7f07000c;
+        public static final int menu_settings=0x7f07000f;
         public static final int remote_description=0x7f070005;
         public static final int remote_title=0x7f070004;
         public static final int select_activity=0x7f07000b;
@@ -38,6 +42,7 @@ public final class R {
         public static final int activity_car=0x7f030000;
         public static final int activity_remote=0x7f030001;
         public static final int activity_wi_drive=0x7f030002;
+        public static final int row_devices=0x7f030003;
     }
     public static final class menu {
         public static final int activity_car=0x7f060000;
@@ -52,10 +57,11 @@ public final class R {
         public static final int button_start=0x7f040007;
         public static final int car_description=0x7f040009;
         public static final int car_title=0x7f040008;
-        public static final int enable_wifi=0x7f04000c;
+        public static final int enable_wifi=0x7f04000d;
         public static final int menu_settings=0x7f040001;
         public static final int remote_description=0x7f04000b;
         public static final int remote_title=0x7f04000a;
+        public static final int select_peers=0x7f04000c;
         public static final int title=0x7f040004;
         public static final int welcome_message=0x7f040005;
     }
