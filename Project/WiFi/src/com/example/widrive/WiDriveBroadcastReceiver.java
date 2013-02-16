@@ -8,14 +8,14 @@ import android.net.wifi.p2p.WifiP2pManager.Channel;
 import android.net.wifi.p2p.WifiP2pManager.PeerListListener;
 import android.util.Log;
 
-public class WiDriveCarBroadcastReceiver extends BroadcastReceiver {
+public class WiDriveBroadcastReceiver extends BroadcastReceiver {
 
     private WifiP2pManager cManager;
     private Channel cChannel;
-    private CarActivity cActivity;
+    private WiDriveListener cActivity;
 
 	
-    public WiDriveCarBroadcastReceiver(WifiP2pManager manager, Channel channel, CarActivity activity) {
+    public WiDriveBroadcastReceiver(WifiP2pManager manager, Channel channel, WiDriveListener activity) {
         super();
         this.cManager = manager;
         this.cChannel = channel;

@@ -1,10 +1,9 @@
 package com.example.widrive;
 
 import java.util.ArrayList;
-import java.util.List;
 
-import com.example.widrive.CarActivity.PeerSelectDialogFragment;
-
+import android.annotation.SuppressLint;
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.ProgressDialog;
@@ -24,24 +23,28 @@ import android.support.v4.app.DialogFragment;
 import android.support.v4.app.FragmentActivity;
 import android.util.Log;
 import android.view.LayoutInflater;
-import android.view.Menu;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-public class RemoteActivity extends FragmentActivity implements PeerListListener {
-
-	WifiP2pManager rManager;
-	Channel rChannel;
-	BroadcastReceiver rReceiver;
+public class WiDriveListener extends FragmentActivity implements PeerListListener {
+	
+	WifiP2pManager cManager;
+	Channel cChannel;
+	BroadcastReceiver cReceiver;
+	
+    //private static ArrayList<WifiP2pDevice> peers;
+	private ArrayList<WifiP2pDevice> peers = new ArrayList<WifiP2pDevice>();
+	private static WiDriveCustomAdapter adapter;
+    
+    public static boolean isWifiP2pEnabled = false;
+    IntentFilter cIntentFilter;
+    
+    //private Activity activity;
 	ProgressDialog progressDialog = null;
-	
-	private List<WifiP2pDevice> peers = new ArrayList<WifiP2pDevice>();
-	private boolean isWifiP2pEnabled = false;
-	
-	IntentFilter rIntentFilter;
 	
 	DialogFragment EnableWifiFragment = new EnableWifiDirectDialogFragment();
 	DialogFragment PeerSelectFragment = new PeerSelectDialogFragment();
@@ -49,17 +52,26 @@ public class RemoteActivity extends FragmentActivity implements PeerListListener
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		setContentView(R.layout.activity_remote);
 		
-	    rIntentFilter = new IntentFilter();
-	    rIntentFilter.addAction(WifiP2pManager.WIFI_P2P_STATE_CHANGED_ACTION);
-	    rIntentFilter.addAction(WifiP2pManager.WIFI_P2P_PEERS_CHANGED_ACTION);
-	    rIntentFilter.addAction(WifiP2pManager.WIFI_P2P_CONNECTION_CHANGED_ACTION);
-	    rIntentFilter.addAction(WifiP2pManager.WIFI_P2P_THIS_DEVICE_CHANGED_ACTION);
+		Intent mIntent = getIntent();
+		int intValue = mIntent.getIntExtra("a", 0);
+		 
+		if (intValue == 1){
+			setContentView(R.layout.activity_car);
+		} else {
+			setContentView(R.layout.activity_remote);
+		}
 		
-	    rManager = (WifiP2pManager) getSystemService(Context.WIFI_P2P_SERVICE);
-	    rChannel = rManager.initialize(this, getMainLooper(), null);
-	    rReceiver = new WiDriveRemoteBroadcastReceiver(rManager, rChannel, this);
+	    cIntentFilter = new IntentFilter();
+	    cIntentFilter.addAction(WifiP2pManager.WIFI_P2P_STATE_CHANGED_ACTION);
+	    cIntentFilter.addAction(WifiP2pManager.WIFI_P2P_PEERS_CHANGED_ACTION);
+	    cIntentFilter.addAction(WifiP2pManager.WIFI_P2P_CONNECTION_CHANGED_ACTION);
+	    cIntentFilter.addAction(WifiP2pManager.WIFI_P2P_THIS_DEVICE_CHANGED_ACTION);
+		
+	    cManager = (WifiP2pManager) getSystemService(Context.WIFI_P2P_SERVICE);
+	    cChannel = cManager.initialize(this, getMainLooper(), null);
+	    cReceiver = new WiDriveBroadcastReceiver(cManager, cChannel, this);
+		
 	    
 	}
 	
@@ -67,48 +79,22 @@ public class RemoteActivity extends FragmentActivity implements PeerListListener
 	@Override
 	protected void onResume() {
 	    super.onResume();
-	    registerReceiver(rReceiver, rIntentFilter);
+	    registerReceiver(cReceiver, cIntentFilter);
 	}
 	/* unregister the broadcast receiver */
 	@Override
 	protected void onPause() {
 	    super.onPause();
-	    unregisterReceiver(rReceiver);
+	    unregisterReceiver(cReceiver);
 	}
-
-	@Override
-	public boolean onCreateOptionsMenu(Menu menu) {
-		// Inflate the menu; this adds items to the action bar if it is present.
-		getMenuInflater().inflate(R.menu.activity_remote, menu);
-		return true;
-	}
-	
-    private static String getDeviceStatus(int deviceStatus) {
-        Log.d(WiDriveActivity.TAG, "Peer status :" + deviceStatus);
-        switch (deviceStatus) {
-            case WifiP2pDevice.AVAILABLE:
-                return "Available";
-            case WifiP2pDevice.INVITED:
-                return "Invited";
-            case WifiP2pDevice.CONNECTED:
-                return "Connected";
-            case WifiP2pDevice.FAILED:
-                return "Failed";
-            case WifiP2pDevice.UNAVAILABLE:
-                return "Unavailable";
-            default:
-                return "Unknown";
-
-        }
-    }
 	
 	/** Called when the user clicks the pair button */
 	public void pair(View view) {
-        if (!isWifiP2pEnabled) {
+        if (!WiDriveListener.isWifiP2pEnabled) {
         	EnableWifiFragment.show(getSupportFragmentManager(), "Wifi Direct");
         	return;
         }
-
+        
         if (progressDialog != null && progressDialog.isShowing()) {
             progressDialog.dismiss();
         }
@@ -119,17 +105,17 @@ public class RemoteActivity extends FragmentActivity implements PeerListListener
             }
         });
         
-        rManager.discoverPeers(rChannel, new WifiP2pManager.ActionListener() {
+        cManager.discoverPeers(cChannel, new WifiP2pManager.ActionListener() {
 
             @Override
             public void onSuccess() {
-                Toast.makeText(RemoteActivity.this, "Discovery Initiated",
+                Toast.makeText(WiDriveListener.this, "Discovery Initiated",
                         Toast.LENGTH_SHORT).show();
             }
 
             @Override
             public void onFailure(int reasonCode) {
-                Toast.makeText(RemoteActivity.this, "Discovery Failed : " + reasonCode,
+                Toast.makeText(WiDriveListener.this, "Discovery Failed : " + reasonCode,
                         Toast.LENGTH_SHORT).show();
                 if (progressDialog != null && progressDialog.isShowing()) {
                     progressDialog.dismiss();
@@ -138,17 +124,25 @@ public class RemoteActivity extends FragmentActivity implements PeerListListener
         });
 	}
 	
+	 /**
+     * @param isWifiP2pEnabled the isWifiP2pEnabled to set
+     */
+    public void setIsWifiP2pEnabled(boolean isWifiP2pEnabled) {
+        WiDriveListener.isWifiP2pEnabled = isWifiP2pEnabled;
+    }
+	
     @Override
     public void onPeersAvailable(WifiP2pDeviceList peerList) {
     	
-    	Log.d(WiDriveActivity.TAG, "got here");
-    	
-        if (progressDialog != null && progressDialog.isShowing()) {
+    	if (progressDialog != null && progressDialog.isShowing()) {
             progressDialog.dismiss();
         }
-        peers.clear();
+    	
+    	peers.clear();
+    	Log.d(WiDriveActivity.TAG, "got here 0");
         peers.addAll(peerList.getDeviceList());
         //((WiFiPeerListAdapter) getListAdapter()).notifyDataSetChanged();
+        Log.d(WiDriveActivity.TAG, "got here 1");
         if (peers.size() == 0) {
             Log.d(WiDriveActivity.TAG, "No devices found");
             if (progressDialog != null && progressDialog.isShowing()) {
@@ -156,21 +150,15 @@ public class RemoteActivity extends FragmentActivity implements PeerListListener
             }
             return;
         }
-        PeerSelectFragment.show(getSupportFragmentManager(), "Wifi Direct"); /* start here */
+        Log.d(WiDriveActivity.TAG, "got here 2");
+        PeerSelectFragment.show(getSupportFragmentManager(), "Wifi Direct");
     }
-	
+    
 	/** Called when the user clicks the start button */
 	public void start(View view) {
-		
+
 	}
-	
-	 /**
-     * @param isWifiP2pEnabled the isWifiP2pEnabled to set
-     */
-    public void setIsWifiP2pEnabled(boolean isWifiP2pEnabled) {
-        this.isWifiP2pEnabled = isWifiP2pEnabled;
-    }
-	
+    
 	public static class EnableWifiDirectDialogFragment extends DialogFragment {
 	    @Override
 	    public Dialog onCreateDialog(Bundle savedInstanceState) {
@@ -191,38 +179,18 @@ public class RemoteActivity extends FragmentActivity implements PeerListListener
 	        return builder.create();
 	    }
 	}
+    
+	@SuppressLint("ValidFragment")
 	public class PeerSelectDialogFragment extends DialogFragment {
 	    @Override
 	    public Dialog onCreateDialog(Bundle savedInstanceState) {
-	    	int position;
 	        AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-	        // Get the layout inflater
-	        LayoutInflater inflater = getActivity().getLayoutInflater();
-
-	        // Inflate and set the layout for the dialog
-	        // Pass null as the parent view because its going in the dialog layout
 	        
-	        	for (position = 0; position < peers.size(); position++) {
-	            WifiP2pDevice device = peers.get(position);
-				    if (device != null) {
-				        TextView top = (TextView) findViewById(R.id.device_name);
-				        TextView bottom = (TextView) findViewById(R.id.device_details);
-				        
-				        Log.d(WiDriveActivity.TAG, "name is " + device.deviceName);
-				        if (top != null) {
-				            top.setText(device.deviceName);
-				            Log.d(WiDriveActivity.TAG, "name is " + device.deviceName);
-				        }
-				        
-				        Log.d(WiDriveActivity.TAG, "status is " + getDeviceStatus(device.status));
-				        if (bottom != null) {
-				            bottom.setText(getDeviceStatus(device.status));
-				            Log.d(WiDriveActivity.TAG, "status is " + device.status);
-				        }
-				    }
-	        	}
-				
-		        builder.setView(inflater.inflate(R.layout.row_devices, null));
+	        ListView lv = new ListView(getActivity());
+	        adapter = new WiDriveCustomAdapter(getActivity(), R.layout.row_devices, peers);
+	        lv.setAdapter(adapter);
+
+	        builder.setView(lv);
 	        // Add action buttons
 		        builder.setMessage(R.string.select_peers)
 	               .setPositiveButton("ok", new DialogInterface.OnClickListener() {
@@ -238,5 +206,72 @@ public class RemoteActivity extends FragmentActivity implements PeerListListener
 	               });      
 	        return builder.create();
 	    }
+	    
+	    @Override
+	    public void onDismiss(DialogInterface dialog) {
+	    	ActivityHelper.uninitialize(getActivity());
+	        super.onDismiss(dialog);
+	    }
+
+	    @Override
+	    public void onStart() {
+	    	ActivityHelper.initialize(getActivity());
+	        super.onStart();
+	    }
 	}
+	
+	public class WiDriveCustomAdapter extends ArrayAdapter<WifiP2pDevice>{
+	    private ArrayList<WifiP2pDevice> peers;
+	    private Activity activity;
+	 
+	    public WiDriveCustomAdapter(Activity a, int textViewResourceId, ArrayList<WifiP2pDevice> entries) {
+	        super(a, textViewResourceId, entries);
+	        this.peers = entries;
+	        this.activity = a;
+	    }
+	   
+	    private String getDeviceStatus(int deviceStatus) {
+	        Log.d(WiDriveActivity.TAG, "Peer status :" + deviceStatus);
+	        switch (deviceStatus) {
+	            case WifiP2pDevice.AVAILABLE:
+	                return "Available";
+	            case WifiP2pDevice.INVITED:
+	                return "Invited";
+	            case WifiP2pDevice.CONNECTED:
+	                return "Connected";
+	            case WifiP2pDevice.FAILED:
+	                return "Failed";
+	            case WifiP2pDevice.UNAVAILABLE:
+	                return "Unavailable";
+	            default:
+	                return "Unknown";
+
+	        }
+	    }
+	 
+	    @Override
+	    public View getView(int position, View convertView, ViewGroup parent) {
+	        View v = convertView;
+	        if (v == null) {
+	            LayoutInflater vi =
+	                (LayoutInflater)activity.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+	            v = vi.inflate(R.layout.row_devices, null);
+	        }
+	 
+	        WifiP2pDevice device = peers.get(position);
+	        if (device != null) {
+	            TextView top = (TextView) v.findViewById(R.id.device_name);
+	            TextView bottom = (TextView) v.findViewById(R.id.device_details);
+	            if (top != null) {
+	                top.setText(device.deviceName);
+	            }
+	            if (bottom != null) {
+	                bottom.setText(getDeviceStatus(device.status));
+	            }
+	        }
+	        return v;
+	    }
+	 
+	}
+	
 }
