@@ -3,6 +3,7 @@ package com.example.widrive;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.net.NetworkInfo;
 import android.net.wifi.p2p.WifiP2pManager;
 import android.net.wifi.p2p.WifiP2pManager.Channel;
 import android.net.wifi.p2p.WifiP2pManager.PeerListListener;
@@ -45,7 +46,26 @@ public class WiDriveBroadcastReceiver extends BroadcastReceiver {
                 cManager.requestPeers(cChannel, (PeerListListener) cActivity);
             }
         } else if (WifiP2pManager.WIFI_P2P_CONNECTION_CHANGED_ACTION.equals(action)) {
-            // Respond to new connection or disconnections
+
+            if (cManager == null) {
+                return;
+            }
+
+            NetworkInfo networkInfo = (NetworkInfo) intent
+                    .getParcelableExtra(WifiP2pManager.EXTRA_NETWORK_INFO);
+
+            if (networkInfo.isConnected()) {
+
+                // we are connected with the other device, request connection
+                // info to find group owner IP
+
+                //DeviceDetailFragment fragment = (DeviceDetailFragment) activity
+                //        .getFragmentManager().findFragmentById(R.id.frag_detail);
+                cManager.requestConnectionInfo(cChannel, cActivity);
+            } else {
+                // It's a disconnect
+                cActivity.resetData();
+            }
         } else if (WifiP2pManager.WIFI_P2P_THIS_DEVICE_CHANGED_ACTION.equals(action)) {
             // Respond to this device's wifi state changing
         }

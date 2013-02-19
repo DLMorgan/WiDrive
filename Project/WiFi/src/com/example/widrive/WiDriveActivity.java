@@ -9,7 +9,6 @@ import android.view.View;
 public class WiDriveActivity extends Activity {
 	
 	public static final String TAG = "WiDrive";
-	private static String a = "";
 	
 	
 	
@@ -36,7 +35,7 @@ public class WiDriveActivity extends Activity {
 	/** Called when the user clicks the remote button */
 	public void startRemoteActivity(View view) {
 	    Intent intent = new Intent(this, WiDriveListener.class);
-	    intent.putExtra(a, 2);
+	    intent.putExtra("a", 2);
 	    startActivity(intent);
 	}
 	

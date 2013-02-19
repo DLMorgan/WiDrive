@@ -20,4 +20,8 @@
 	
 	<string name="enable_wifi">WiFi Direct is required to perform this operation. Would you like to enable it now?</string>
 	
+	<string name="disconnect">Disconnect</string>
+	<string name="connection_on">Connected to </string>
+	<string name="connection_off">Unconnected</string>
+	
 </resources>
