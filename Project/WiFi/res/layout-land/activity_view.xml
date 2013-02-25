@@ -27,12 +27,22 @@
         android:textSize="23sp" />
 
     <Button
-        android:id="@+id/button_server_start"
+        android:id="@+id/disconnect"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
+        android:layout_alignParentRight="true"
+        android:text="@string/disconnect"
+        android:onClick="start"
+        android:visibility="invisible" />
+
+    <Button
+        android:id="@+id/button_server_start"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
         android:layout_alignParentLeft="true"
-        android:layout_toLeftOf="@+id/title"
+        android:layout_alignRight="@+id/title"
+        android:layout_centerVertical="true"
         android:background="@drawable/button_server_custom"
         android:onClick="start"
         android:text="@string/button_start" />
@@ -41,11 +51,23 @@
         android:id="@+id/button_server_pair"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"
         android:layout_alignParentRight="true"
-        android:layout_toRightOf="@+id/title"
+        android:layout_centerVertical="true"
+        android:layout_toRightOf="@+id/button_server_start"
         android:background="@drawable/button_client_custom"
         android:onClick="pair"
         android:text="@string/button_pair" />
+
+    <TextView
+        android:id="@+id/connection"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentLeft="true"
+        android:layout_toLeftOf="@+id/disconnect"
+        android:gravity="center_vertical|center_horizontal"
+        android:text="@string/connection_off"
+        android:textColor="#f00"
+        android:textSize="22sp" />
 
 </RelativeLayout>

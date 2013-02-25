@@ -37,6 +37,7 @@ public class WiDriveBroadcastReceiver extends BroadcastReceiver {
                 // Wi-Fi Direct is not enabled
             	Log.d(WiDriveActivity.TAG, "WiFi Direct is disabled");
             	cActivity.setIsWifiP2pEnabled(false);
+            	cActivity.resetData();
             }
         } else if (WifiP2pManager.WIFI_P2P_PEERS_CHANGED_ACTION.equals(action)) {
             // request available peers from the wifi p2p manager. This is an
@@ -58,10 +59,8 @@ public class WiDriveBroadcastReceiver extends BroadcastReceiver {
 
                 // we are connected with the other device, request connection
                 // info to find group owner IP
-
-                //DeviceDetailFragment fragment = (DeviceDetailFragment) activity
-                //        .getFragmentManager().findFragmentById(R.id.frag_detail);
                 cManager.requestConnectionInfo(cChannel, cActivity);
+                WiDriveListener.CONNECTED = true;
             } else {
                 // It's a disconnect
                 cActivity.resetData();

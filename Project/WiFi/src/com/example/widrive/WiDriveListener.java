@@ -1,5 +1,10 @@
 package com.example.widrive;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.net.ServerSocket;
+import java.net.Socket;
 import java.util.ArrayList;
 
 import android.annotation.SuppressLint;
@@ -22,6 +27,7 @@ import android.net.wifi.p2p.WifiP2pManager;
 import android.net.wifi.p2p.WifiP2pManager.Channel;
 import android.net.wifi.p2p.WifiP2pManager.ConnectionInfoListener;
 import android.net.wifi.p2p.WifiP2pManager.PeerListListener;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.provider.Settings;
 import android.support.v4.app.DialogFragment;
@@ -42,6 +48,11 @@ public class WiDriveListener extends FragmentActivity implements PeerListListene
 	static final int CAR = 1;
 	static final int REMOTE = 2;
 	
+	public static final String IP_SERVER = "192.168.49.1";
+	
+	private int WiDriveInterface;
+	private WifiP2pInfo info = null;
+	
 	WifiP2pManager cManager;
 	Channel cChannel;
 	BroadcastReceiver cReceiver;
@@ -49,6 +60,7 @@ public class WiDriveListener extends FragmentActivity implements PeerListListene
 	private ArrayList<WifiP2pDevice> peers = new ArrayList<WifiP2pDevice>();
 	private static WiDriveCustomAdapter adapter;
     
+	public static boolean CONNECTED = false;
 	public static boolean isSearching = false;
     public static boolean isWifiP2pEnabled = false;
     IntentFilter cIntentFilter;
@@ -63,11 +75,14 @@ public class WiDriveListener extends FragmentActivity implements PeerListListene
 		super.onCreate(savedInstanceState);
 		
 		Intent mIntent = getIntent();
-		int intValue = mIntent.getIntExtra("a", 0);
-		
+		WiDriveInterface = mIntent.getIntExtra("a", 0);
 		setContentView(R.layout.activity_view);
-		
-		setupView(intValue);
+		if (WiDriveInterface == CAR || WiDriveInterface == REMOTE){
+			setupView(WiDriveInterface);
+		}
+		else {
+			setupView(1);
+		}
 		
 	    cIntentFilter = new IntentFilter();
 	    cIntentFilter.addAction(WifiP2pManager.WIFI_P2P_STATE_CHANGED_ACTION);
@@ -150,7 +165,7 @@ public class WiDriveListener extends FragmentActivity implements PeerListListene
         peers.addAll(peerList.getDeviceList());
         //((WiFiPeerListAdapter) getListAdapter()).notifyDataSetChanged();
         if (peers.size() == 0) {
-            Log.d(WiDriveActivity.TAG, "No devices found");
+            Log.d(WiDriveActivity.TAG, "onPeersAvalaible - No devices found");
             if (progressDialog != null && progressDialog.isShowing()) {
                 progressDialog.dismiss();
             }
@@ -170,9 +185,72 @@ public class WiDriveListener extends FragmentActivity implements PeerListListene
         }
     }
     
+	@Override
+	public void onConnectionInfoAvailable(WifiP2pInfo info) {
+        Log.d(WiDriveActivity.TAG, "onConnectionInfoAvailable");
+        
+        //if (this.info == null){
+        	this.info = info;
+        //}
+        
+        if (progressDialog != null && progressDialog.isShowing()) {
+            progressDialog.dismiss();
+        }
+
+        if (CONNECTED){
+        	try {
+        		WifiP2pDevice device = peers.get(0);  //need to fix this if multiple devices available
+
+			TextView tx1 = (TextView) findViewById(R.id.connection);
+			tx1.setTextColor(Color.GREEN);
+			tx1.setText(this.getResources().getString(R.string.connection_on) +" " + device.deviceName);
+			View tx2 = findViewById(R.id.disconnect);
+			tx2.setVisibility(View.VISIBLE);
+			CONNECTED = true;
+	        } catch (Exception e) {
+	            Log.e(WiDriveActivity.TAG, e.getMessage());
+	        }
+            if (WiDriveInterface == REMOTE) {
+                new FileServerAsyncTask(this, findViewById(R.id.status_text))
+                        .execute();
+            } 
+	    }
+
+        // hide the connect button
+        //hide pair
+        
+	}
+    
 	/** Called when the user clicks the start button */
 	public void start(View view) {
-
+		//if (WiDriveInterface == CAR){
+		//	Intent intent = new Intent(this, WiDriveCamActivity.class);
+		//	startActivity(intent);
+		//}
+	    
+		if (WiDriveInterface == CAR){
+			if (CONNECTED){
+		        // Transfer a string to group owner
+		        String data = "Hello World";
+		        Log.d(WiDriveActivity.TAG, "Intent----------- " + data);
+		        Intent serviceIntent = new Intent(this, MJPEGStreamService.class);
+		        serviceIntent.setAction(MJPEGStreamService.ACTION_SEND_JPEG);
+		        serviceIntent.putExtra(MJPEGStreamService.EXTRAS_STRING, data);
+		        serviceIntent.putExtra(MJPEGStreamService.EXTRAS_GROUP_OWNER_ADDRESS,
+		                info.groupOwnerAddress.getHostAddress());
+		        serviceIntent.putExtra(MJPEGStreamService.EXTRAS_GROUP_OWNER_PORT, 8988);
+		        this.startService(serviceIntent);
+			}
+			else {
+                Toast.makeText(WiDriveListener.this, "Connect to a client first",
+                        Toast.LENGTH_SHORT).show();
+			}
+		}
+	}
+	
+	/** Called when the user clicks the disconnect button */
+	public void disconnect(View view) {
+	    Log.d(WiDriveActivity.TAG,"disconnected");
 	}
     
 	public static class EnableWifiDirectDialogFragment extends DialogFragment {
@@ -200,7 +278,7 @@ public class WiDriveListener extends FragmentActivity implements PeerListListene
 	public class PeerSelectDialogFragment extends DialogFragment {
 	    @Override
 	    public Dialog onCreateDialog(Bundle savedInstanceState) {
-	    	Log.d(WiDriveActivity.TAG, "onCreate");
+	    	Log.d(WiDriveActivity.TAG, "Peer Select Dialog onCreate");
 	        AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
 	        
 	        ListView lv = new ListView(getActivity());
@@ -333,36 +411,30 @@ public class WiDriveListener extends FragmentActivity implements PeerListListene
 	}
 
 	
-	public void setupView(int WiDriveInterface) {
-		if (WiDriveInterface == CAR) {
+	public void setupView(int myInterface) {
+		if (myInterface == CAR) {
 			TextView tx1 = (TextView) findViewById(R.id.title);
 			tx1.setText(this.getResources().getString(R.string.car_title));
 			TextView tx2 = (TextView) findViewById(R.id.description);
 			tx2.setText(this.getResources().getString(R.string.car_description));
 		}
 		
-		if (WiDriveInterface == REMOTE) {
+		if (myInterface == REMOTE) {
 			TextView tx1 = (TextView) findViewById(R.id.title);
 			tx1.setText(this.getResources().getString(R.string.remote_title));
 			TextView tx2 = (TextView) findViewById(R.id.description);
 			tx2.setText(this.getResources().getString(R.string.remote_description));
 		}
-	}
-
-	@Override
-	public void onConnectionInfoAvailable(WifiP2pInfo info) {
-        Log.d(WiDriveActivity.TAG, "next level");
-        if (progressDialog != null && progressDialog.isShowing()) {
-            progressDialog.dismiss();
-        }
-        
-        WifiP2pDevice device = peers.get(0);  //need to fix this if multiple devices available
-        
-		TextView tx1 = (TextView) findViewById(R.id.connection);
-		tx1.setTextColor(Color.GREEN);
-		tx1.setText(this.getResources().getString(R.string.connection_on) +" " + device.deviceName);
-		View tx2 = findViewById(R.id.disconnect);
-		tx2.setVisibility(0);
+		
+		if (!CONNECTED){
+			View tx2 = findViewById(R.id.disconnect);
+			tx2.setVisibility(View.INVISIBLE);
+		}
+		else {
+			View tx2 = findViewById(R.id.disconnect);
+			tx2.setVisibility(View.VISIBLE);
+		}
+		
 	}
 	
     /**
@@ -372,11 +444,87 @@ public class WiDriveListener extends FragmentActivity implements PeerListListene
     public void resetData() {
     	peers.clear();
 
+    	
 		TextView tx1 = (TextView) findViewById(R.id.connection);
 		tx1.setTextColor(Color.RED);
 		tx1.setText(this.getResources().getString(R.string.connection_off));
 		View tx2 = findViewById(R.id.disconnect);
-		tx2.setVisibility(1);
+		tx2.setVisibility(View.INVISIBLE);
+		
     }
+    
+    /**
+     * A simple server socket that accepts connection and writes some data on
+     * the stream.
+     */
+    public static class FileServerAsyncTask extends AsyncTask<Void, Void, String> {
+
+        private Context context;
+
+        /**
+         * @param context
+         * @param statusText
+         */
+        public FileServerAsyncTask(Context context, View statusText) {
+            this.context = context;
+        }
+
+        @Override
+        protected String doInBackground(Void... params) {
+            try {
+                ServerSocket serverSocket = new ServerSocket(8988);
+                Log.d(WiDriveActivity.TAG, "Server: Socket opened");
+                Socket client = serverSocket.accept();                             //wait for connection from client
+                Log.d(WiDriveActivity.TAG, "Server: connection done");
+                InputStream inputstream = client.getInputStream();
+                String message = readAsString(inputstream);                  //get file from client
+                serverSocket.close();
+                Log.d(WiDriveActivity.TAG, "Your sent message was " + message);
+                return message;
+            } catch (IOException e) {
+                Log.e(WiDriveActivity.TAG, e.getMessage());
+                return null;
+            }
+        }
+
+        /*
+         * (non-Javadoc)
+         * @see android.os.AsyncTask#onPostExecute(java.lang.Object)
+         */
+        @Override
+        protected void onPostExecute(String result) {
+            if (result != null) {
+                Toast.makeText(context, result,
+                        Toast.LENGTH_SHORT).show();
+            }
+
+        }
+
+        /*
+         * (non-Javadoc)
+         * @see android.os.AsyncTask#onPreExecute()
+         */
+        @Override
+        protected void onPreExecute() {
+            
+        }
+
+    }
+    
+	/**
+	 * Read in given stream into a string
+	 * @param stream
+	 * @return
+	 */
+	public static String readAsString(InputStream stream) throws IOException{
+		OutputStream sos = new StringOutputStream(); 		
+		// Set chunk size to 64K chunk
+		byte[] buffer = new byte[0x10000];
+		int readLen;
+		while((readLen = stream.read(buffer, 0, buffer.length)) != -1){
+			sos.write(buffer, 0, readLen);
+		}
+		return sos.toString();
+	}
 	
 }

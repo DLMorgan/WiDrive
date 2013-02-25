@@ -24,6 +24,7 @@
         android:layout_alignParentLeft="true"
         android:layout_alignParentRight="true"
         android:background="@drawable/button_client_custom"
+        android:onClick="startRemoteActivity"
         android:text="@string/button_client_activity" />
 
     <Button
@@ -35,6 +36,7 @@
         android:layout_alignParentRight="true"
         android:layout_marginBottom="16dp"
         android:background="@drawable/button_server_custom"
+        android:onClick="startCarActivity"
         android:text="@string/button_server_activity" />
 
     <TextView
