@@ -100,7 +100,7 @@ public class MainActivity extends IOIOActivity implements SensorEventListener {
     			//pointing down makes pitch more positive
     			//tilting right makes roll more positive
     			//flat isn't quite 0, 0, 0
-    			Log.d("tilt calc", "azimuth " + tiltvalues[0] + "pitch " + tiltvalues[1] + "roll " + tiltvalues[2]);
+    			Log.d("tilt calc", "azimuth " + tiltvalues[0] + " pitch " + tiltvalues[1] + " roll " + tiltvalues[2]);
     		}
     		
     		
