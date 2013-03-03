@@ -27,6 +27,7 @@ public class MainActivity extends IOIOActivity implements SensorEventListener {
 	float[] rotmatrix = new float[9];
 	float[] tiltvalues = new float[3];
 	
+	
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -38,7 +39,6 @@ public class MainActivity extends IOIOActivity implements SensorEventListener {
         sensormanager = (SensorManager) getSystemService(SENSOR_SERVICE);
         accelerometer = sensormanager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
         magneticsensor = sensormanager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD);
-        
         
     }
     
@@ -72,7 +72,7 @@ public class MainActivity extends IOIOActivity implements SensorEventListener {
 	public void onSensorChanged(SensorEvent event) {
 		if (event.sensor.getType() == Sensor.TYPE_ACCELEROMETER) {
 			System.arraycopy(event.values, 0, accelovalues, 0, 3);
-			//Log.d("accelovalues", accelovalues[0] + " "+ accelovalues[1] + " " + accelovalues[3]);
+
 		}
 		else if (event.sensor.getType() == Sensor.TYPE_MAGNETIC_FIELD) {
 			System.arraycopy(event.values, 0, magnetvalues, 0, 3);
@@ -83,11 +83,15 @@ public class MainActivity extends IOIOActivity implements SensorEventListener {
     class Looper extends BaseIOIOLooper {
     	//Define inputs and outputs
     	private DigitalOutput led;
+    	private PwmOutput motor;
     
     	@Override
     	protected void setup() throws ConnectionLostException {
     		//Assign pins
     		led = ioio_.openDigitalOutput(0);
+    		motor = ioio_.openPwmOutput(6, 1000);
+    		
+    		Log.d("setup", "setup complete");
     	}
     	
     	@Override
@@ -100,7 +104,19 @@ public class MainActivity extends IOIOActivity implements SensorEventListener {
     			//pointing down makes pitch more positive
     			//tilting right makes roll more positive
     			//flat isn't quite 0, 0, 0
-    			Log.d("tilt calc", "azimuth " + tiltvalues[0] + " pitch " + tiltvalues[1] + " roll " + tiltvalues[2]);
+    			//Log.d("tilt calc", "azimuth " + tiltvalues[0] + " pitch " + tiltvalues[1] + " roll " + tiltvalues[2]);
+    			
+    			//motor speed
+    			float dutycycle = 1-Math.abs(tiltvalues[1]);
+    			Log.d("motor", "duty cycle= " + dutycycle);
+    			if (dutycycle < 1 || dutycycle > .25) motor.setDutyCycle(dutycycle);
+    			else motor.setDutyCycle(0);
+    			try {
+    				Thread.sleep(100);
+    			} catch (InterruptedException e) {
+    				// TODO Auto-generated catch block
+    				e.printStackTrace();
+    			}
     		}
     		
     		
