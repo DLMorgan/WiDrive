@@ -109,10 +109,10 @@ public class MainActivity extends IOIOActivity implements SensorEventListener {
     			//motor speed
     			float dutycycle = 1-Math.abs(tiltvalues[1]);
     			Log.d("motor", "duty cycle= " + dutycycle);
-    			if (dutycycle < 1 || dutycycle > .25) motor.setDutyCycle(dutycycle);
+    			if (dutycycle < .75 && dutycycle > .10) motor.setDutyCycle(dutycycle);
     			else motor.setDutyCycle(0);
     			try {
-    				Thread.sleep(100);
+    				Thread.sleep(80);
     			} catch (InterruptedException e) {
     				// TODO Auto-generated catch block
     				e.printStackTrace();
@@ -122,12 +122,13 @@ public class MainActivity extends IOIOActivity implements SensorEventListener {
     		
     	}
     	
+    	}
     	
-    }
+    	
     
     @Override
 	protected IOIOLooper createIOIOLooper() {
-		return new Looper();
+    		return new Looper();
 	}
     
 }
