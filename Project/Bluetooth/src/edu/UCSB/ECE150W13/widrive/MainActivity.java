@@ -1,10 +1,12 @@
 package edu.UCSB.ECE150W13.widrive;
 
+import android.content.Context;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.os.Bundle;
+import android.os.PowerManager;
 import android.util.Log;
 import android.view.Menu;
 import android.widget.ToggleButton;
@@ -84,12 +86,14 @@ public class MainActivity extends IOIOActivity implements SensorEventListener {
     	//Define inputs and outputs
     	private DigitalOutput led;
     	private PwmOutput motor;
+    	private PwmOutput servo;
     
     	@Override
     	protected void setup() throws ConnectionLostException {
     		//Assign pins
     		led = ioio_.openDigitalOutput(0);
     		motor = ioio_.openPwmOutput(6, 1000);
+    		servo = ioio_.openPwmOutput(7, 100);
     		
     		Log.d("setup", "setup complete");
     	}
@@ -98,25 +102,32 @@ public class MainActivity extends IOIOActivity implements SensorEventListener {
     	public void loop() throws ConnectionLostException {
     		led.write(!OnOffButton.isChecked());
     		if (OnOffButton.isChecked()) {
+    			 
+    			 //get sensor info
     			SensorManager.getRotationMatrix(rotmatrix, null, accelovalues, magnetvalues);
     			SensorManager.getOrientation(rotmatrix, tiltvalues);
     			//CW azimuth more positive ? 
-    			//pointing down makes pitch more positive
+    			//pointing down makes pitch more positive - point straight up to stop
     			//tilting right makes roll more positive
-    			//flat isn't quite 0, 0, 0
     			//Log.d("tilt calc", "azimuth " + tiltvalues[0] + " pitch " + tiltvalues[1] + " roll " + tiltvalues[2]);
     			
     			//motor speed
     			float dutycycle = 1-Math.abs(tiltvalues[1]);
-    			Log.d("motor", "duty cycle= " + dutycycle);
+    			//Log.d("motor", "duty cycle= " + dutycycle);
     			if (dutycycle < .75 && dutycycle > .10) motor.setDutyCycle(dutycycle);
     			else motor.setDutyCycle(0);
+    			
+    			//servo steering
+    			float pw = 1500 + 500*tiltvalues[2];
+    			//Log.d("servo", "pulse width= " + pw);
+    			servo.setPulseWidth(pw);
+    			
     			try {
-    				Thread.sleep(80);
+    				Thread.sleep(200);
     			} catch (InterruptedException e) {
-    				// TODO Auto-generated catch block
     				e.printStackTrace();
     			}
+
     		}
     		
     		
