@@ -32,7 +32,8 @@ public final class R {
         public static final int device_name=0x7f07000b;
         public static final int disconnect=0x7f070005;
         public static final int icon=0x7f07000a;
-        public static final int menu_settings=0x7f07000e;
+        public static final int menu_settings=0x7f07000f;
+        public static final int mjpegview=0x7f07000e;
         public static final int select_activity=0x7f070009;
         public static final int status_text=0x7f070006;
         public static final int title=0x7f070000;
@@ -42,6 +43,7 @@ public final class R {
         public static final int activity_wi_drive=0x7f030001;
         public static final int row_devices=0x7f030002;
         public static final int wicamsurface=0x7f030003;
+        public static final int wistreamview=0x7f030004;
     }
     public static final class menu {
         public static final int activity_car=0x7f060000;

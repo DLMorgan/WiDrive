@@ -11,16 +11,15 @@ import android.util.Log;
 
 public class WiDriveBroadcastReceiver extends BroadcastReceiver {
 
-    private WifiP2pManager cManager;
-    private Channel cChannel;
-    private WiDriveListener cActivity;
-
+    private WifiP2pManager wdManager;
+    private Channel wdChannel;
+    private WiDriveListener wdActivity;
 	
     public WiDriveBroadcastReceiver(WifiP2pManager manager, Channel channel, WiDriveListener activity) {
         super();
-        this.cManager = manager;
-        this.cChannel = channel;
-        this.cActivity = activity;
+        this.wdManager = manager;
+        this.wdChannel = channel;
+        this.wdActivity = activity;
     }
     
     @Override
@@ -32,23 +31,23 @@ public class WiDriveBroadcastReceiver extends BroadcastReceiver {
             if (state == WifiP2pManager.WIFI_P2P_STATE_ENABLED) {
                 // Wifi Direct is enabled
             	Log.d(WiDriveActivity.TAG, "WiFi Direct is enabled");
-            	cActivity.setIsWifiP2pEnabled(true);
+            	ActivityHelper.setIsWifiP2pEnabled(true);
             } else {
                 // Wi-Fi Direct is not enabled
             	Log.d(WiDriveActivity.TAG, "WiFi Direct is disabled");
-            	cActivity.setIsWifiP2pEnabled(false);
-            	cActivity.resetData();
+            	ActivityHelper.setIsWifiP2pEnabled(false);
+            	wdActivity.resetData();
             }
         } else if (WifiP2pManager.WIFI_P2P_PEERS_CHANGED_ACTION.equals(action)) {
             // request available peers from the wifi p2p manager. This is an
             // asynchronous call and the calling activity is notified with a
             // callback on PeerListListener.onPeersAvailable()
-            if (cManager != null) {
-                cManager.requestPeers(cChannel, (PeerListListener) cActivity);
+            if (wdManager != null) {
+                wdManager.requestPeers(wdChannel, (PeerListListener) wdActivity);
             }
         } else if (WifiP2pManager.WIFI_P2P_CONNECTION_CHANGED_ACTION.equals(action)) {
 
-            if (cManager == null) {
+            if (wdManager == null) {
                 return;
             }
 
@@ -59,11 +58,11 @@ public class WiDriveBroadcastReceiver extends BroadcastReceiver {
 
                 // we are connected with the other device, request connection
                 // info to find group owner IP
-                cManager.requestConnectionInfo(cChannel, cActivity);
+                wdManager.requestConnectionInfo(wdChannel, wdActivity);
                 WiDriveListener.CONNECTED = true;
             } else {
                 // It's a disconnect
-                cActivity.resetData();
+                wdActivity.resetData();
             }
         } else if (WifiP2pManager.WIFI_P2P_THIS_DEVICE_CHANGED_ACTION.equals(action)) {
             // Respond to this device's wifi state changing

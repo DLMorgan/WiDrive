@@ -1,7 +1,6 @@
 package com.example.widrive;
 
 import java.util.List;
-
 import android.hardware.Camera;
 import android.hardware.Camera.PreviewCallback;
 import android.view.SurfaceHolder;
@@ -21,7 +20,6 @@ public class WiDriveCamView implements SurfaceHolder.Callback{
  
     private List<Camera.Size> supportedSizes; 
     private Camera.Size procSize_;
-    //private boolean inProcessing_ = false;
 
     @SuppressWarnings("deprecation")
 	public WiDriveCamView(SurfaceView sv){
@@ -55,11 +53,7 @@ public class WiDriveCamView implements SurfaceHolder.Callback{
             return;
         camera_.stopPreview();
     }
-
-    public void AutoFocus() {
-        camera_.autoFocus(afcb);
-    }
-
+    
     public void Release() {
         if ( camera_ != null) {
             camera_.stopPreview();
@@ -91,7 +85,6 @@ public class WiDriveCamView implements SurfaceHolder.Callback{
 	        p.setPreviewSize(procSize_.width, procSize_.height);
 	        
 	        camera_.setParameters(p);
-	        //camera_.setDisplayOrientation(90);
 	        try {
 	            camera_.setPreviewDisplay(surfaceHolder_);
 	        } catch ( Exception ex) {
@@ -111,12 +104,6 @@ public class WiDriveCamView implements SurfaceHolder.Callback{
 	    }
 	    return c; // returns null if camera is unavailable
 	}
-    
-    private Camera.AutoFocusCallback afcb = new Camera.AutoFocusCallback() {
-        @Override
-        public void onAutoFocus(boolean success, Camera camera) {
-        }
-    };
 
     @Override
     public void surfaceChanged(SurfaceHolder sh, int format, int w, int h){
