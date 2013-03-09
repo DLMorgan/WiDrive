@@ -9,6 +9,7 @@ import android.os.Bundle;
 import android.os.PowerManager;
 import android.util.Log;
 import android.view.Menu;
+import android.view.MotionEvent;
 import android.widget.ToggleButton;
 //import ioio.examples.hello.MainActivity.Looper;
 //import ioio.examples.hello.MainActivity.Looper;
@@ -28,6 +29,12 @@ public class MainActivity extends IOIOActivity implements SensorEventListener {
 	float[] magnetvalues = new float[3];
 	float[] rotmatrix = new float[9];
 	float[] tiltvalues = new float[3];
+	float startX;
+	float startY;
+	float currentX;
+	float currentY;
+	float deltaX;
+	float deltaY;
 	
 	
 
@@ -47,8 +54,8 @@ public class MainActivity extends IOIOActivity implements SensorEventListener {
     @Override
     protected void onResume() {
     	super.onResume();
-    	sensormanager.registerListener(this, accelerometer, SensorManager.SENSOR_DELAY_NORMAL);
-    	sensormanager.registerListener(this, magneticsensor, SensorManager.SENSOR_DELAY_NORMAL);
+    	sensormanager.registerListener(this, accelerometer, SensorManager.SENSOR_DELAY_GAME);
+    	sensormanager.registerListener(this, magneticsensor, SensorManager.SENSOR_DELAY_GAME);
     }
     
     @Override
@@ -81,12 +88,44 @@ public class MainActivity extends IOIOActivity implements SensorEventListener {
 		}
 		
 	}
+	
+	@Override
+	public boolean onTouchEvent (MotionEvent event)	{
+		int action = event.getActionMasked();
+		switch (action) {
+		
+			case MotionEvent.ACTION_DOWN:
+				startX = event.getRawX();
+				startY = event.getRawY();
+				break;
+				
+			case MotionEvent.ACTION_MOVE:
+				currentX = event.getX();
+				currentY = event.getY();
+				//Log.d("touchevent", "rawX= " + startX + " currentX= " + currentX);
+				//Log.d("touchevent", "rayY= " + startY + " currentY= " + currentY);
+				//compute how much your finger has moved and normalize it between 0 and 1
+				deltaX = (currentX - startX);
+				deltaY = (currentY - startY);
+				Log.d("touchevent", "deltaX= " + deltaX + " deltaY= " + deltaY);
+				break;
+				
+			case MotionEvent.ACTION_UP:
+				//make motors stop and center servos
+				Log.d("touchevent", "stop");
+				break;
+				
+				
+		}
+		return true;
+	}
     
     class Looper extends BaseIOIOLooper {
     	//Define inputs and outputs
     	private DigitalOutput led;
-    	private PwmOutput motor;
-    	private PwmOutput servo;
+    	
+    	public PwmOutput motor;
+    	public PwmOutput servo;
     
     	@Override
     	protected void setup() throws ConnectionLostException {
@@ -112,21 +151,34 @@ public class MainActivity extends IOIOActivity implements SensorEventListener {
     			//Log.d("tilt calc", "azimuth " + tiltvalues[0] + " pitch " + tiltvalues[1] + " roll " + tiltvalues[2]);
     			
     			//motor speed
+    			//by touch
+    			//motor.setDutyCycle();
+    			
+    			
+    			//by accelerometer
     			float dutycycle = 1-Math.abs(tiltvalues[1]);
-    			//Log.d("motor", "duty cycle= " + dutycycle);
-    			if (dutycycle < .75 && dutycycle > .10) motor.setDutyCycle(dutycycle);
+    			if (dutycycle < .75 && dutycycle > .15) {
+    			motor.setDutyCycle(dutycycle);
+    			Log.d("motor", "duty cycle= " + dutycycle);
+    			}
     			else motor.setDutyCycle(0);
     			
     			//servo steering
+    			//by touch
+    			
+    			
+    			//by accelerometer
     			float pw = 1500 + 500*tiltvalues[2];
-    			//Log.d("servo", "pulse width= " + pw);
+    			Log.d("servo", "pulse width= " + pw);
     			servo.setPulseWidth(pw);
+    			
     			
     			try {
     				Thread.sleep(200);
     			} catch (InterruptedException e) {
     				e.printStackTrace();
     			}
+    			
 
     		}
     		
