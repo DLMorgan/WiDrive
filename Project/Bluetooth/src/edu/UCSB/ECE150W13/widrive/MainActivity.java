@@ -1,6 +1,8 @@
 package edu.UCSB.ECE150W13.widrive;
 
+import android.bluetooth.BluetoothAdapter;
 import android.content.Context;
+import android.content.Intent;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
@@ -51,6 +53,14 @@ public class MainActivity extends IOIOActivity implements SensorEventListener {
         
         displaydistance = (TextView) findViewById(R.id.textView1);
         displaydistance.setText("Distance to object: " + distance + " in.");
+        
+        BluetoothAdapter mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
+        if (!mBluetoothAdapter.isEnabled())
+        {
+          // prompt the user to turn BlueTooth on
+          Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
+          startActivityForResult(enableBtIntent, 1);
+        }
         
         
         
