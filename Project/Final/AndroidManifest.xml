@@ -3,23 +3,51 @@
     android:versionCode="1"
     android:versionName="1.0" >
 
-    <uses-sdk
-        android:minSdkVersion="8"
-        android:targetSdkVersion="15" />
+     <uses-sdk
+        android:minSdkVersion="14"
+        android:targetSdkVersion="17" />
+    
+	<uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
+	<uses-permission android:name="android.permission.CHANGE_WIFI_STATE" />
+	<uses-permission android:name="android.permission.CHANGE_NETWORK_STATE" />
+	<uses-permission android:name="android.permission.INTERNET" />
+	<uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+	<uses-permission android:name="android.permission.CAMERA" />
+	<uses-permission android:name="android.permission.WAKE_LOCK" />
+	<uses-permission android:name="android.permission.BLUETOOTH" />
 
     <application
+        android:allowBackup="true"
         android:icon="@drawable/ic_launcher"
         android:label="@string/app_name"
         android:theme="@style/AppTheme" >
         <activity
-            android:name=".WiDriveActivity"
-            android:label="@string/title_activity_wi_drive" >
+            android:name="com.example.widrive.WiDriveActivity"
+            android:label="@string/app_name" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <activity android:name="com.example.widrive.WiDriveCamActivity" 
+                      android:configChanges="keyboard|keyboardHidden|orientation|screenLayout|uiMode|screenSize|smallestScreenSize"/> 
+        <activity android:name="com.example.widrive.MainActivity" android:label="@string/app_name"></activity>
+        <activity android:name="WiDriveListener" android:label="@string/app_name"></activity>
+        <activity android:name=".WiDriveStreamActivity"  
+            android:label="@string/app_name" 
+            android:screenOrientation="landscape" 
+            android:configChanges="orientation|keyboardHidden">
+             <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+            <intent-filter>
+				<action android:name="android.hardware.usb.action.USB_ACCESSORY_ATTACHED" />
+			</intent-filter>
+        </activity>
+        <service android:enabled="true" android:name=".MJPEGStreamService" />
     </application>
 
 </manifest>
