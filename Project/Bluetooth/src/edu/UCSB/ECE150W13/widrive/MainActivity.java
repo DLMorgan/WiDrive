@@ -10,9 +10,11 @@ import android.os.PowerManager;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MotionEvent;
+import android.widget.TextView;
 import android.widget.ToggleButton;
 //import ioio.examples.hello.MainActivity.Looper;
 //import ioio.examples.hello.MainActivity.Looper;
+import ioio.lib.api.AnalogInput;
 import ioio.lib.api.DigitalOutput;
 import ioio.lib.api.PwmOutput;
 import ioio.lib.api.exception.ConnectionLostException;
@@ -35,6 +37,9 @@ public class MainActivity extends IOIOActivity implements SensorEventListener {
 	float currentY;
 	float deltaX;
 	float deltaY;
+	float volts;
+	float distance;
+	TextView displaydistance;
 	
 	
 
@@ -43,6 +48,11 @@ public class MainActivity extends IOIOActivity implements SensorEventListener {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         OnOffButton = (ToggleButton) findViewById(R.id.onoff);
+        
+        displaydistance = (TextView) findViewById(R.id.textView1);
+        displaydistance.setText("Distance to object: " + distance + " in.");
+        
+        
         
         //setup sensors
         sensormanager = (SensorManager) getSystemService(SENSOR_SERVICE);
@@ -107,12 +117,14 @@ public class MainActivity extends IOIOActivity implements SensorEventListener {
 				//compute how much your finger has moved and normalize it between 0 and 1
 				deltaX = (currentX - startX);
 				deltaY = (currentY - startY);
-				Log.d("touchevent", "deltaX= " + deltaX + " deltaY= " + deltaY);
+				//Log.d("touchevent", "deltaX= " + deltaX + " deltaY= " + deltaY);
 				break;
 				
 			case MotionEvent.ACTION_UP:
 				//make motors stop and center servos
-				Log.d("touchevent", "stop");
+				deltaX = 0.0f;
+				//Log.d("touchevent", "stop");
+				//Log.d("touchevent", "deltaX= " + deltaX + " deltaY= " + deltaY);
 				break;
 				
 				
@@ -126,6 +138,7 @@ public class MainActivity extends IOIOActivity implements SensorEventListener {
     	
     	public PwmOutput motor;
     	public PwmOutput servo;
+    	public AnalogInput input;
     
     	@Override
     	protected void setup() throws ConnectionLostException {
@@ -133,6 +146,7 @@ public class MainActivity extends IOIOActivity implements SensorEventListener {
     		led = ioio_.openDigitalOutput(0);
     		motor = ioio_.openPwmOutput(6, 1000);
     		servo = ioio_.openPwmOutput(7, 100);
+    		input = ioio_.openAnalogInput(34);
     		
     		Log.d("setup", "setup complete");
     	}
@@ -140,6 +154,20 @@ public class MainActivity extends IOIOActivity implements SensorEventListener {
     	@Override
     	public void loop() throws ConnectionLostException {
     		led.write(!OnOffButton.isChecked());
+    		
+    		try {
+				volts = input.getVoltage();
+			} catch (InterruptedException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
+    		
+    		//Log.d("input", "voltage= " + volts);
+			
+			distance = volts/(.0064f); //distance away in inches
+			
+			setText(Float.toString(distance));
+			
     		if (OnOffButton.isChecked()) {
     			 
     			 //get sensor info
@@ -152,26 +180,35 @@ public class MainActivity extends IOIOActivity implements SensorEventListener {
     			
     			//motor speed
     			//by touch
-    			//motor.setDutyCycle();
+    			float dutycycle = (-deltaY/200);
+    			if (dutycycle > 0.1 && dutycycle < 0.8) motor.setDutyCycle(dutycycle);
+    			else motor.setDutyCycle(0);
+    			//Log.d("motor", "dutycycle= " + dutycycle);
     			
     			
     			//by accelerometer
+    			/*
     			float dutycycle = 1-Math.abs(tiltvalues[1]);
     			if (dutycycle < .75 && dutycycle > .15) {
     			motor.setDutyCycle(dutycycle);
     			Log.d("motor", "duty cycle= " + dutycycle);
     			}
     			else motor.setDutyCycle(0);
+    			*/
     			
     			//servo steering
     			//by touch
+    			float pw = 1500 + 2f*deltaX;
+    			servo.setPulseWidth(pw);
+    			//Log.d("servo", "pw= " + pw);
     			
     			
     			//by accelerometer
+    			/*
     			float pw = 1500 + 500*tiltvalues[2];
     			Log.d("servo", "pulse width= " + pw);
     			servo.setPulseWidth(pw);
-    			
+    			*/
     			
     			try {
     				Thread.sleep(200);
@@ -181,6 +218,10 @@ public class MainActivity extends IOIOActivity implements SensorEventListener {
     			
 
     		}
+    		else {
+    			motor.setDutyCycle(0);
+    			servo.setPulseWidth(1500);
+    		}
     		
     		
     	}
@@ -188,6 +229,15 @@ public class MainActivity extends IOIOActivity implements SensorEventListener {
     	}
     	
     	
+    void setText(final String dist) {
+    	runOnUiThread(new Runnable() {
+			@Override
+			public void run() {
+				displaydistance.setText("Distance to object: " + dist + " in.");
+			}
+		});
+    	
+    }
     
     @Override
 	protected IOIOLooper createIOIOLooper() {
