@@ -4,8 +4,12 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
+
 import org.apache.http.client.ClientProtocolException;
+
 import android.app.Activity;
+import android.content.Context;
+import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
@@ -15,6 +19,7 @@ import android.view.WindowManager;
 public class WiDriveStreamActivity extends Activity {
 
 	private WiDriveStreamView mjpegview = null;
+	private Context context_ = null;
     
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -26,13 +31,16 @@ public class WiDriveStreamActivity extends Activity {
         
         setContentView(R.layout.wistreamview);
         mjpegview = (WiDriveStreamView) findViewById(R.id.mjpegview);      
-        new ReadStream().execute();
+        context_ = this;
+        //new ReadStream().execute();
+	    Intent intent = new Intent(this, WiDriveIOIO.class);
+	    startActivity(intent);
     }
 
     public void onPause() {
         super.onPause();
         if(mjpegview!=null){
-        	mjpegview.stopPlayback();
+        	//mjpegview.stopPlayback();
         }
     }
     
@@ -69,6 +77,8 @@ public class WiDriveStreamActivity extends Activity {
         	Log.d(WiDriveActivity.TAG,"starting playback!");
 			mjpegview = (WiDriveStreamView) findViewById(R.id.mjpegview); 
         	mjpegview.startPlayback(result);
+    	    //Intent intent = new Intent(context_, WiDriveIOIO.class);
+    	    //startActivity(intent);
         }
     }
 }

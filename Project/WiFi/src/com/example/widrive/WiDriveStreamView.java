@@ -23,7 +23,7 @@ public class WiDriveStreamView extends SurfaceView implements SurfaceHolder.Call
     
     private MjpegViewThread thread;
     private WiDriveInputStream mIn = null;    
-    private boolean mRun = false;
+    public static boolean mRun = false;
     private boolean surfaceDone = false;    
 
     private int dispWidth;
