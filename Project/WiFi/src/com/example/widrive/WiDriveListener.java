@@ -107,8 +107,10 @@ public class WiDriveListener extends FragmentActivity implements PeerListListene
     	WiDriveListener.peerList = peerList;
     	ActivityHelper.getCurrentPeers();
     	
+    	Log.d(WiDriveActivity.TAG, "peerlist is " + WiDriveListener.peerList);
+    	
         if (peers.size() == 0) {
-            Log.d(WiDriveActivity.TAG, "onPeersAvalaible - No devices found");
+            Log.d(WiDriveActivity.TAG, "onPeersAvalaible - No devices found " + peers);
             if (progressDialog != null && progressDialog.isShowing()) {
                 progressDialog.dismiss();
             }
@@ -135,6 +137,8 @@ public class WiDriveListener extends FragmentActivity implements PeerListListene
         
         //if (this.info == null){
         	this.info = info;
+        	Log.d(WiDriveActivity.TAG, "" + info);
+        	Log.d(WiDriveActivity.TAG, "" + CONNECTED);
         //}
         
         if (progressDialog != null && progressDialog.isShowing()) {
@@ -144,6 +148,7 @@ public class WiDriveListener extends FragmentActivity implements PeerListListene
         if (ActivityHelper.getCurrentPeers()){
         	Log.d(WiDriveActivity.TAG,"I HAVE PEERS!!");
 	        	try {
+	        		Log.d(WiDriveActivity.TAG, " " + peers);
 	        		WifiP2pDevice device = peers.get(0);  //need to fix this if multiple devices available
 	
 					TextView tx1 = (TextView) findViewById(R.id.connection);
@@ -152,6 +157,7 @@ public class WiDriveListener extends FragmentActivity implements PeerListListene
 					View tx2 = findViewById(R.id.disconnect);
 					tx2.setVisibility(View.VISIBLE);
 					CONNECTED = true;
+		        	return;
 		        } catch (Exception e) {
 		            Log.e(WiDriveActivity.TAG, e.getMessage());
 		        }
@@ -159,8 +165,19 @@ public class WiDriveListener extends FragmentActivity implements PeerListListene
 	        // hide the connect button
 	        //hide pair
         }
-        else {	//wifi direct bug with last connection
-        	//toggleWiFi();
+        if (CONNECTED){	//wifi direct bug cannot receive peerlist
+        	/*
+        	cManager.requestPeers(cChannel, (PeerListListener) WiDriveListener.this);
+        	Log.d(WiDriveActivity.TAG, "called request peers");
+        	*/
+        	
+			TextView tx1 = (TextView) findViewById(R.id.connection);
+			tx1.setTextColor(Color.BLUE);
+			tx1.setText(this.getResources().getString(R.string.connection_on) +" " + info.groupOwnerAddress);
+			View tx2 = findViewById(R.id.disconnect);
+			tx2.setVisibility(View.VISIBLE);
+			CONNECTED = true;
+			
         }
         
 	}
@@ -232,7 +249,7 @@ public class WiDriveListener extends FragmentActivity implements PeerListListene
 			}
 		
 			if (WiDriveInterface == REMOTE) {
-	    	    Intent intent = new Intent(this, WiDriveStreamActivity.class);
+	    	    Intent intent = new Intent(this, WiDriveIOIO.class);
 	    	    startActivity(intent);
 	        }
 		}
@@ -253,7 +270,8 @@ public class WiDriveListener extends FragmentActivity implements PeerListListene
 			}
 
 			public void onSuccess() {
-
+				//setupview();
+				resetData();
 			}
 
 		});
@@ -371,13 +389,11 @@ public class WiDriveListener extends FragmentActivity implements PeerListListene
      */
     public void resetData() {
     	WiDriveListener.peers.clear();
-    	//toggleWiFi();
     	
 		TextView tx1 = (TextView) findViewById(R.id.connection);
 		tx1.setTextColor(Color.RED);
 		tx1.setText(this.getResources().getString(R.string.connection_off));
 		View tx2 = findViewById(R.id.disconnect);
 		tx2.setVisibility(View.INVISIBLE);
-		
     }
 }

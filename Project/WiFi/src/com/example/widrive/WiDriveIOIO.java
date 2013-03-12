@@ -26,10 +26,16 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MotionEvent;
+import android.view.Window;
+import android.view.WindowManager;
 import android.widget.TextView;
 import android.widget.ToggleButton;
 
 public class WiDriveIOIO extends IOIOActivity implements SensorEventListener {
+	//private boolean inLOOP = false;
+	private  AsyncTask<String, Void, WiDriveInputStream> Stream_;
+	private Socket client;
+	
 	private ToggleButton OnOffButton;
 	private SensorManager sensormanager;
 	private	Sensor accelerometer;
@@ -53,8 +59,18 @@ public class WiDriveIOIO extends IOIOActivity implements SensorEventListener {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        
+        requestWindowFeature(Window.FEATURE_NO_TITLE);
+        Window win = getWindow();
+        win.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);    
+        win.setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
+        
         setContentView(R.layout.ioio_activity);
         
+        //inLOOP = false;
+        if (Stream_ == null){
+        	Stream_ = new ReadStream();
+        }
         mjpegview = (WiDriveStreamView) findViewById(R.id.mjpegview);
         
         OnOffButton = (ToggleButton) findViewById(R.id.onoff);
@@ -89,6 +105,21 @@ public class WiDriveIOIO extends IOIOActivity implements SensorEventListener {
     @Override
     protected void onPause() {
     	super.onPause();
+    	if (Stream_ != null) {
+    		Stream_.cancel(true);
+    	}
+		if (client != null){
+			try {
+				client.shutdownInput();
+				client.close();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+        if(mjpegview!=null){
+        	mjpegview.stopPlayback();
+        }
     	sensormanager.unregisterListener(this);
     }
 
@@ -240,12 +271,12 @@ public class WiDriveIOIO extends IOIOActivity implements SensorEventListener {
     			motor.setDutyCycle(0);
     			servo.setPulseWidth(1500);
     		}
-    		if(!WiDriveStreamView.mRun){
-    			new ReadStream().execute();
+    		if(Stream_.getStatus() != AsyncTask.Status.RUNNING && Stream_.getStatus() != AsyncTask.Status.FINISHED ){
+    			Log.d(WiDriveActivity.TAG,"entered ReadStream loop");
+    			Stream_.execute();
     		}
-    	}
-    	
-    	}
+		}
+	}
     	
     	
     void setText(final String dist) {
@@ -268,13 +299,14 @@ public class WiDriveIOIO extends IOIOActivity implements SensorEventListener {
      * the stream.
      */
     public class ReadStream extends AsyncTask<String, Void, WiDriveInputStream> {
-
+    	
         protected WiDriveInputStream doInBackground(String... url) {
         	Log.d(WiDriveActivity.TAG,"ReadStream doInBackground");
+        	//inLOOP = true;
             try {
-                ServerSocket serverSocket = new ServerSocket(8988);
+            	ServerSocket serverSocket = new ServerSocket(8988);
                 Log.d(WiDriveActivity.TAG, "Server: Socket opened");
-                Socket client = serverSocket.accept();                             //wait for connection from client
+                client = serverSocket.accept();                             //wait for connection from client
                 serverSocket.close();
                 Log.d(WiDriveActivity.TAG, "Server: connection done");
                 InputStream inputstream = client.getInputStream();

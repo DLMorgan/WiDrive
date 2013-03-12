@@ -14,7 +14,7 @@
         android:layout_marginTop="21dp"
         android:text=""
         android:textColor="#FFFFFF"
-        android:textSize="20sp" />
+        android:textSize="17sp" />
 
     <TextView
         android:id="@+id/title"
@@ -33,7 +33,7 @@
         android:layout_alignParentBottom="true"
         android:layout_alignParentRight="true"
         android:text="@string/disconnect"
-        android:onClick="start"
+        android:onClick="disconnect"
         android:visibility="invisible" />
 
     <Button

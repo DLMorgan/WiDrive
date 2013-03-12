@@ -26,6 +26,7 @@
         <uses-library android:name="com.android.future.usb.accessory"
 			android:required="false" />
         <activity
+            android:screenOrientation="landscape" android:configChanges="orientation|keyboardHidden" 
             android:name="com.example.widrive.WiDriveActivity"
             android:label="@string/app_name" >
             <intent-filter>
@@ -36,9 +37,8 @@
         </activity>
         <activity android:name="com.example.widrive.WiDriveCamActivity" 
                       android:configChanges="keyboard|keyboardHidden|orientation|screenLayout|uiMode|screenSize|smallestScreenSize"/> 
-        <activity android:name="com.example.widrive.MainActivity" android:label="@string/app_name"></activity>
-        <activity android:name="WiDriveListener" android:label="@string/app_name"></activity>
-        <activity android:name="WiDriveIOIO" android:label="@string/app_name">
+        <activity android:screenOrientation="landscape" android:configChanges="orientation|keyboardHidden"  android:name="WiDriveListener" android:label="@string/app_name"></activity>
+        <activity android:screenOrientation="landscape" android:configChanges="orientation|keyboardHidden"  android:name="WiDriveIOIO" android:label="@string/app_name">
             <intent-filter>
 				<action android:name="android.hardware.usb.action.USB_ACCESSORY_ATTACHED" />
 			</intent-filter>

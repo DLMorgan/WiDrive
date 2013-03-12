@@ -29,6 +29,8 @@ public class WiDriveCamActivity extends Activity implements WiDriveCamView.Camer
   final Handler mHandler = new Handler();
   
   // connection variables
+  private  AsyncTask<String, Void, Void> Stream_;
+  Socket socket;
   public static final String EXTRAS_GROUP_OWNER_ADDRESS = "go_host";
   private String host;
   private int port = 8988;
@@ -65,7 +67,10 @@ public class WiDriveCamActivity extends Activity implements WiDriveCamView.Camer
       
       setContentView(R.layout.wicamsurface);
       initCamera();
-      new WriteStream().execute();
+      if (Stream_ == null){
+      	Stream_ = new WriteStream();
+      }
+      Stream_.execute();
   }
   
   @Override
@@ -81,7 +86,12 @@ public class WiDriveCamActivity extends Activity implements WiDriveCamView.Camer
   @Override
   public void onPause(){  
       super.onPause();
-      cameraView_.StopPreview(); 
+      cameraView_.StopPreview();
+  	if (Stream_ != null) {
+  		Log.d(WiDriveActivity.TAG,"stream cancel called");
+		Stream_.cancel(true);
+	}
+  	   Log.d(WiDriveActivity.TAG,"Finish Called");
       finish();
   }  
 
@@ -93,10 +103,10 @@ public class WiDriveCamActivity extends Activity implements WiDriveCamView.Camer
   }
   
   public class WriteStream extends AsyncTask<String, Void, Void> {
-
+	  
       protected Void doInBackground(String... url) {
     	  Log.d(WiDriveActivity.TAG,"ReadStream doInBackground");
-          Socket socket = new Socket();
+          socket = new Socket();
 
 	      try {
 	          Log.d(WiDriveActivity.TAG, "Opening client socket - ");
@@ -113,9 +123,26 @@ public class WiDriveCamActivity extends Activity implements WiDriveCamView.Camer
 	      } catch (IOException e) {
 	          e.printStackTrace();
 	          //streamOK = true;
-	      }
+	      } 
+	      
 	      //initCamera();
 		return null;
+      }
+      
+      @Override
+      protected void onCancelled() {
+          if (socket != null) {
+              if (socket.isConnected()) {
+                  try {
+                	  socket.shutdownInput();
+                      socket.close();
+                      Log.d(WiDriveActivity.TAG,"Socket closed");
+                  } catch (IOException e) {
+                      // Give up
+                      e.printStackTrace();
+                  }
+              }
+          }
       }
   }
 
@@ -126,34 +153,37 @@ public class WiDriveCamActivity extends Activity implements WiDriveCamView.Camer
     	  frame = data;
     	  imageFormat = c.getParameters().getPreviewFormat();
     	  
-          mHandler.post(new Runnable() {
-              public void run() {
-            	  if (stream != null){
-            	    try
-            	    {
-            	       buffer.reset();
-            	       synchronized(frame){
-            	    	   new YuvImage(frame, imageFormat, IMG_WIDTH, IMG_HEIGHT, null).compressToJpeg(area, 100, buffer);
-            	       }
-            	        buffer.flush();
-
-            	        // write the content header
-            	        stream.write(("--" + boundary + "\r\n" + 
-            	                      "Content-type: image/jpg\r\n" + 
-            	                      "Content-Length: " + buffer.size() + 
-            	                      "\r\n\r\n").getBytes());
-
-            	        buffer.writeTo(stream);
-            	        stream.write("\r\n\r\n".getBytes());
-            	        stream.flush();
-            	    }
-            	    catch (IOException e)
-            	    {
-            	    	Log.d(WiDriveActivity.TAG, e.getMessage());
-            	    }
-            	  }
-              }
-          });
-      }
+    	  if (!socket.isClosed()) {
+    	  
+	          mHandler.post(new Runnable() {
+	              public void run() {
+	            	  if (stream != null){
+	            	    try
+	            	    {
+	            	       buffer.reset();
+	            	       synchronized(frame){
+	            	    	   new YuvImage(frame, imageFormat, IMG_WIDTH, IMG_HEIGHT, null).compressToJpeg(area, 100, buffer);
+	            	       }
+	            	        buffer.flush();
+	
+	            	        // write the content header
+	            	        stream.write(("--" + boundary + "\r\n" + 
+	            	                      "Content-type: image/jpg\r\n" + 
+	            	                      "Content-Length: " + buffer.size() + 
+	            	                      "\r\n\r\n").getBytes());
+	
+	            	        buffer.writeTo(stream);
+	            	        stream.write("\r\n\r\n".getBytes());
+	            	        stream.flush();
+	            	    }
+	            	    catch (IOException e)
+	            	    {
+	            	    	Log.d(WiDriveActivity.TAG, e.getMessage());
+	            	    }
+	            	  }
+	              }
+	          });
+	      }
+	  }
   };
 }

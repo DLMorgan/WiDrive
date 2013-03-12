@@ -65,13 +65,4 @@ public class ActivityHelper {
         WiDriveListener.isWifiP2pEnabled = isWifiP2pEnabled;
     }
 	
-	/*
-	public void toggleWiFi() {
-		WifiManager wifi = (WifiManager)getSystemService(Context.WIFI_SERVICE);
-		if (wifi.isWifiEnabled()){
-		  wifi.setWifiEnabled(false);
-		  wifi.setWifiEnabled(true);
-		}
-	}
-	*/
 }
