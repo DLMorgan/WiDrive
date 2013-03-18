@@ -132,7 +132,7 @@ public class MainActivity extends IOIOActivity implements SensorEventListener {
 				
 			case MotionEvent.ACTION_UP:
 				//make motors stop and center servos
-				deltaX = 0.0f;
+				deltaY = 0.0f;
 				//Log.d("touchevent", "stop");
 				//Log.d("touchevent", "deltaX= " + deltaX + " deltaY= " + deltaY);
 				break;
@@ -191,7 +191,9 @@ public class MainActivity extends IOIOActivity implements SensorEventListener {
     			//motor speed
     			//by touch
     			float dutycycle = (-deltaY/200);
-    			if (dutycycle > 0.1 && dutycycle < 0.8) motor.setDutyCycle(dutycycle);
+    			//lock top speed to half power
+    			if (dutycycle > 0.1 && dutycycle < 0.5) motor.setDutyCycle(dutycycle);
+    			if (dutycycle >.5) motor.setDutyCycle(.5f);
     			else motor.setDutyCycle(0);
     			//Log.d("motor", "dutycycle= " + dutycycle);
     			
