@@ -1,8 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<resources>
-    <string name="hello">Hello, ECE 188A!</string>
-    <string name="app_name">ECE 188 Demo 1</string>
-    <string name="demo">This is our demo of a motor driver with the IOIO.</string>
-    <string name="speed">Speed Setting</string>
-    <string name="onoff">Push to turn on or off</string>
-</resources>
